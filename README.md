@@ -49,9 +49,14 @@ fitscore-calculator/
 ├── templates/
 │   └── index.html                   # Web interface
 ├── requirements.txt                 # Python dependencies
-├── README.md                       # This file
+├── README.md                       # Project documentation
 ├── LICENSE                         # MIT license
-└── .gitignore                      # Git ignore rules
+├── .gitignore                      # Git ignore rules
+├── Dockerfile                      # Docker configuration
+├── docker-compose.yml              # Local Docker setup
+├── Procfile                        # Heroku deployment
+├── runtime.txt                     # Python version
+└── .github/workflows/ci.yml        # CI/CD pipeline
 ```
 
 ## 🔌 API Endpoints
