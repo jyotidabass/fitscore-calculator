@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitScore Calculator - AI-Powered Candidate Evaluation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        .score-card {
+            transition: all 0.3s ease;
+        }
+        .score-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        }
+        .loading {
+            display: none;
+        }
+        .loading.show {
+            display: block;
+        }
+        .result-section {
+            display: none;
+        }
+        .result-section.show {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-8">
+        <div class="container mx-auto px-6">
+            <h1 class="text-4xl font-bold text-center mb-2">FitScore Calculator</h1>
+            <p class="text-xl text-center opacity-90">AI-Powered Candidate Evaluation with GPT-4o-mini Integration</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+        <!-- Form Section -->
+        <div class="max-w-4xl mx-auto">
+            <div class="bg-white rounded-lg card-shadow p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">Evaluate Candidate Fit</h2>
+                
+                <form id="fitscoreForm" class="space-y-6">
+                    <!-- OpenAI API Key -->
+                    <div>
+                        <label for="openai_api_key" class="block text-sm font-medium text-gray-700 mb-2">
+                            OpenAI API Key (Optional - for GPT-4o-mini features)
+                        </label>
+                        <input 
+                            type="password" 
+                            id="openai_api_key" 
+                            name="openai_api_key"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="sk-..."
+                        >
+                        <p class="text-sm text-gray-500 mt-1">
+                            Leave empty to use environment variable or disable GPT-4 features
+                        </p>
+                    </div>
+
+                    <!-- Resume Text -->
+                    <div>
+                        <label for="resume_text" class="block text-sm font-medium text-gray-700 mb-2">
+                            Candidate Resume *
+                        </label>
+                        <textarea 
+                            id="resume_text" 
+                            name="resume_text"
+                            rows="8"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Paste the candidate's resume text here..."
+                            required
+                        ></textarea>
+                    </div>
+
+                    <!-- Job Description -->
+                    <div>
+                        <label for="job_description" class="block text-sm font-medium text-gray-700 mb-2">
+                            Job Description *
+                        </label>
+                        <textarea 
+                            id="job_description" 
+                            name="job_description"
+                            rows="6"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Paste the job description here..."
+                            required
+                        ></textarea>
+                    </div>
+
+                    <!-- Additional Context -->
+                    <div>
+                        <label for="collateral" class="block text-sm font-medium text-gray-700 mb-2">
+                            Additional Context (Optional)
+                        </label>
+                        <textarea 
+                            id="collateral" 
+                            name="collateral"
+                            rows="3"
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Company culture, specific requirements, team context..."
+                        ></textarea>
+                    </div>
+
+                    <!-- GPT-4 Toggle -->
+                    <div class="flex items-center">
+                        <input 
+                            type="checkbox" 
+                            id="use_gpt4" 
+                            name="use_gpt4"
+                            checked
+                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        >
+                        <label for="use_gpt4" class="ml-2 block text-sm text-gray-700">
+                            Enable GPT-4o-mini features (recommended)
+                        </label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button 
+                        type="submit"
+                        class="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition duration-200"
+                    >
+                        Calculate FitScore
+                    </button>
+                </form>
+            </div>
+
+            <!-- Loading Section -->
+            <div id="loading" class="loading bg-white rounded-lg card-shadow p-8 mb-8 text-center">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                <p class="text-lg text-gray-700">Analyzing candidate fit with AI...</p>
+                <p class="text-sm text-gray-500 mt-2">This may take a few moments</p>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" class="result-section">
+                <!-- Overall Score -->
+                <div class="bg-white rounded-lg card-shadow p-8 mb-8">
+                    <div class="text-center mb-6">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">FitScore Results</h2>
+                        <div id="overallScore" class="text-6xl font-bold mb-2"></div>
+                        <div id="submittableStatus" class="text-xl font-semibold mb-4"></div>
+                        <div id="scoreDescription" class="text-gray-600"></div>
+                    </div>
+                </div>
+
+                <!-- Score Breakdown -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="score-card bg-white rounded-lg card-shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Education (20%)</h3>
+                        <div id="educationScore" class="text-3xl font-bold text-blue-600"></div>
+                        <div id="educationDetails" class="text-sm text-gray-600 mt-2"></div>
+                    </div>
+                    
+                    <div class="score-card bg-white rounded-lg card-shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Career Trajectory (20%)</h3>
+                        <div id="careerScore" class="text-3xl font-bold text-green-600"></div>
+                        <div id="careerDetails" class="text-sm text-gray-600 mt-2"></div>
+                    </div>
+                    
+                    <div class="score-card bg-white rounded-lg card-shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Company Relevance (15%)</h3>
+                        <div id="companyScore" class="text-3xl font-bold text-purple-600"></div>
+                        <div id="companyDetails" class="text-sm text-gray-600 mt-2"></div>
+                    </div>
+                    
+                    <div class="score-card bg-white rounded-lg card-shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Tenure Stability (15%)</h3>
+                        <div id="tenureScore" class="text-3xl font-bold text-orange-600"></div>
+                        <div id="tenureDetails" class="text-sm text-gray-600 mt-2"></div>
+                    </div>
+                    
+                    <div class="score-card bg-white rounded-lg card-shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Skills Match (20%)</h3>
+                        <div id="skillsScore" class="text-3xl font-bold text-red-600"></div>
+                        <div id="skillsDetails" class="text-sm text-gray-600 mt-2"></div>
+                    </div>
+                    
+                    <div class="score-card bg-white rounded-lg card-shadow p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-2">Bonus Signals (5%)</h3>
+                        <div id="bonusScore" class="text-3xl font-bold text-indigo-600"></div>
+                        <div id="bonusDetails" class="text-sm text-gray-600 mt-2"></div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="bg-white rounded-lg card-shadow p-8 mb-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Score Breakdown Chart</h3>
+                    <div class="h-64">
+                        <canvas id="scoreChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Recommendations -->
+                <div class="bg-white rounded-lg card-shadow p-8 mb-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Recommendations</h3>
+                    <div id="recommendations" class="space-y-2"></div>
+                </div>
+
+                <!-- Detailed Analysis -->
+                <div class="bg-white rounded-lg card-shadow p-8">
+                    <h3 class="text-xl font-bold text-gray-800 mb-4">Detailed Analysis</h3>
+                    <div id="detailedAnalysis" class="space-y-4"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-12">
+        <div class="container mx-auto px-6 text-center">
+            <p>&copy; 2024 FitScore Calculator. Powered by GPT-4o-mini AI.</p>
+        </div>
+    </footer>
+
+    <script>
+        let scoreChart = null;
+
+        document.getElementById('fitscoreForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Show loading
+            document.getElementById('loading').classList.add('show');
+            document.getElementById('results').classList.remove('show');
+            
+            // Get form data
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('/calculate-fitscore-form', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    displayResults(result);
+                } else {
+                    alert('Error: ' + result.error);
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                document.getElementById('loading').classList.remove('show');
+            }
+        });
+
+        function displayResults(result) {
+            // Overall score
+            const overallScore = document.getElementById('overallScore');
+            const submittableStatus = document.getElementById('submittableStatus');
+            const scoreDescription = document.getElementById('scoreDescription');
+            
+            overallScore.textContent = result.total_score;
+            overallScore.className = result.submittable ? 
+                'text-6xl font-bold mb-2 text-green-600' : 
+                'text-6xl font-bold mb-2 text-red-600';
+            
+            submittableStatus.textContent = result.submittable ? 
+                '✅ SUBMITTABLE CANDIDATE' : 
+                '❌ RECOMMENDED REJECT';
+            submittableStatus.className = result.submittable ? 
+                'text-xl font-semibold mb-4 text-green-600' : 
+                'text-xl font-semibold mb-4 text-red-600';
+            
+            if (result.total_score >= 9.0) {
+                scoreDescription.textContent = 'Exceptional candidate (top 1-2%)';
+            } else if (result.total_score >= 8.2) {
+                scoreDescription.textContent = 'Strong candidate - recommend to submit';
+            } else if (result.total_score >= 7.0) {
+                scoreDescription.textContent = 'Good candidate but below elite bar';
+            } else if (result.total_score >= 5.0) {
+                scoreDescription.textContent = 'Average candidate - consider carefully';
+            } else {
+                scoreDescription.textContent = 'Below average - significant concerns';
+            }
+
+            // Individual scores
+            document.getElementById('educationScore').textContent = result.education_score;
+            document.getElementById('careerScore').textContent = result.career_trajectory_score;
+            document.getElementById('companyScore').textContent = result.company_relevance_score;
+            document.getElementById('tenureScore').textContent = result.tenure_stability_score;
+            document.getElementById('skillsScore').textContent = result.most_important_skills_score;
+            document.getElementById('bonusScore').textContent = result.bonus_signals_score;
+
+            // Score details
+            if (result.details.education) {
+                document.getElementById('educationDetails').textContent = 
+                    `Tier: ${result.details.education.tier || 'Unknown'}`;
+            }
+            if (result.details.career_trajectory) {
+                document.getElementById('careerDetails').textContent = 
+                    result.details.career_trajectory.progression_level || 'Standard progression';
+            }
+            if (result.details.company_relevance) {
+                document.getElementById('companyDetails').textContent = 
+                    `${result.details.company_relevance.role_type} role at ${result.details.company_relevance.target_company_type} company`;
+            }
+            if (result.details.tenure_stability) {
+                document.getElementById('tenureDetails').textContent = 
+                    `${result.details.tenure_stability.average_tenure?.toFixed(1) || 'Unknown'} years average`;
+            }
+            if (result.details.most_important_skills) {
+                const matchPercent = result.details.most_important_skills.match_percentage || 0;
+                document.getElementById('skillsDetails').textContent = 
+                    `${matchPercent.toFixed(0)}% skills match`;
+            }
+            if (result.details.bonus_signals) {
+                const signalCount = result.details.bonus_signals.signals_found?.length || 0;
+                document.getElementById('bonusDetails').textContent = 
+                    `${signalCount} bonus signals found`;
+            }
+
+            // Recommendations
+            const recommendationsDiv = document.getElementById('recommendations');
+            recommendationsDiv.innerHTML = '';
+            result.recommendations.forEach(rec => {
+                const recDiv = document.createElement('div');
+                recDiv.className = 'p-3 bg-blue-50 border-l-4 border-blue-400 text-blue-800';
+                recDiv.textContent = rec;
+                recommendationsDiv.appendChild(recDiv);
+            });
+
+            // Detailed analysis
+            displayDetailedAnalysis(result.details);
+
+            // Create chart
+            createScoreChart(result);
+
+            // Show results
+            document.getElementById('results').classList.add('show');
+        }
+
+        function displayDetailedAnalysis(details) {
+            const analysisDiv = document.getElementById('detailedAnalysis');
+            analysisDiv.innerHTML = '';
+
+            // GPT-4 features
+            if (details.gpt4_enhanced) {
+                const gptDiv = document.createElement('div');
+                gptDiv.className = 'p-4 bg-green-50 border border-green-200 rounded-lg';
+                gptDiv.innerHTML = `
+                    <h4 class="font-semibold text-green-800 mb-2">🤖 GPT-4o-mini Analysis</h4>
+                    <p class="text-green-700">Enhanced analysis with AI-powered context detection and smart criteria generation.</p>
+                `;
+                analysisDiv.appendChild(gptDiv);
+            }
+
+            // Context detection
+            if (details.context_detection) {
+                const contextDiv = document.createElement('div');
+                contextDiv.className = 'p-4 bg-gray-50 border border-gray-200 rounded-lg';
+                contextDiv.innerHTML = `
+                    <h4 class="font-semibold text-gray-800 mb-2">🎯 Detected Context</h4>
+                    <p><strong>Industry:</strong> ${details.context_detection.industry || 'Unknown'}</p>
+                    <p><strong>Company Type:</strong> ${details.context_detection.company_type || 'Unknown'}</p>
+                    <p><strong>Role Type:</strong> ${details.context_detection.role_type || 'Unknown'}</p>
+                `;
+                analysisDiv.appendChild(contextDiv);
+            }
+
+            // Smart criteria
+            if (details.smart_criteria) {
+                const criteriaDiv = document.createElement('div');
+                criteriaDiv.className = 'p-4 bg-purple-50 border border-purple-200 rounded-lg';
+                criteriaDiv.innerHTML = `
+                    <h4 class="font-semibold text-purple-800 mb-2">🎯 Elite Hiring Criteria</h4>
+                    <p class="text-purple-700">Generated criteria for top 1-2% performers in this role.</p>
+                `;
+                analysisDiv.appendChild(criteriaDiv);
+            }
+
+            // Skills analysis
+            if (details.skills_analysis) {
+                const skillsDiv = document.createElement('div');
+                skillsDiv.className = 'p-4 bg-blue-50 border border-blue-200 rounded-lg';
+                skillsDiv.innerHTML = `
+                    <h4 class="font-semibold text-blue-800 mb-2">🔧 Skills Analysis</h4>
+                    <p class="text-blue-700">Enhanced skills matching with confidence levels and inferred capabilities.</p>
+                `;
+                analysisDiv.appendChild(skillsDiv);
+            }
+        }
+
+        function createScoreChart(result) {
+            const ctx = document.getElementById('scoreChart').getContext('2d');
+            
+            if (scoreChart) {
+                scoreChart.destroy();
+            }
+            
+            scoreChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Education', 'Career Trajectory', 'Company Relevance', 'Tenure Stability', 'Skills Match', 'Bonus Signals'],
+                    datasets: [{
+                        label: 'Candidate Scores',
+                        data: [
+                            result.education_score,
+                            result.career_trajectory_score,
+                            result.company_relevance_score,
+                            result.tenure_stability_score,
+                            result.most_important_skills_score,
+                            result.bonus_signals_score
+                        ],
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(59, 130, 246, 1)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: {
+                                stepSize: 2
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Sample data for testing
+        function loadSampleData() {
+            document.getElementById('resume_text').value = `John Doe
+Software Engineer
+
+EDUCATION:
+Massachusetts Institute of Technology
+Bachelor of Science in Computer Science
+GPA: 3.8
+
+EXPERIENCE:
+Senior Software Engineer
+Google Inc.
+2020-2023 (3 years)
+- Led team of 10 engineers
+- Built scalable microservices
+- Used Python, React, AWS, Docker
+
+Software Engineer
+Microsoft Corporation
+2018-2020 (2 years)
+- Developed web applications
+- Used JavaScript, Node.js, SQL
+
+SKILLS:
+Python, JavaScript, React, Node.js, AWS, Docker, Kubernetes, SQL, MongoDB
+
+BONUS:
+- Open source contributor
+- Published technical articles
+- Speaking at conferences`;
+
+            document.getElementById('job_description').value = `Senior Software Engineer
+Tech Startup
+
+We are looking for a Senior Software Engineer to join our growing team.
+
+Requirements:
+- 5+ years of software engineering experience
+- Strong knowledge of Python, JavaScript, React
+- Experience with AWS, Docker, Kubernetes
+- Experience with microservices architecture
+- Leadership experience preferred
+
+Nice to have:
+- Machine learning experience
+- Open source contributions
+- Startup experience`;
+
+            document.getElementById('collateral').value = 'Startup environment with fast-paced culture and emphasis on technical skills.';
+        }
+
+        // Add sample data button
+        const sampleButton = document.createElement('button');
+        sampleButton.type = 'button';
+        sampleButton.textContent = 'Load Sample Data';
+        sampleButton.className = 'mt-4 bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition duration-200';
+        sampleButton.onclick = loadSampleData;
+        document.getElementById('fitscoreForm').appendChild(sampleButton);
+    </script>
+</body>
+</html> 
