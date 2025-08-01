@@ -231,126 +231,154 @@
     </div>
     
     <script>
-        // Force cache refresh
-        if (window.location.search === '') {
-            window.location.search = '?v=' + Date.now();
-        }
-        
-        document.getElementById('fitscoreForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        // Clear any existing event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('fitscoreForm');
             
-            const submitBtn = document.getElementById('submitBtn');
-            const loading = document.getElementById('loading');
-            const result = document.getElementById('result');
+            // Remove any existing event listeners
+            const newForm = form.cloneNode(true);
+            form.parentNode.replaceChild(newForm, form);
             
-            // Show loading state
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Calculating...';
-            loading.style.display = 'block';
-            result.style.display = 'none';
-            
-            try {
-                // Simulate API processing time
-                await new Promise(resolve => setTimeout(resolve, 2000));
+            // Add new event listener
+            newForm.addEventListener('submit', function(e) {
+                e.preventDefault();
                 
-                // Generate demo results based on input content
-                const resumeText = document.getElementById('resume').value.toLowerCase();
-                const jobText = document.getElementById('jobDescription').value.toLowerCase();
+                const submitBtn = document.getElementById('submitBtn');
+                const loading = document.getElementById('loading');
+                const result = document.getElementById('result');
                 
-                // Simple scoring logic for demo
-                let educationScore = 7.0;
-                let careerScore = 7.5;
-                let companyScore = 7.0;
-                let tenureScore = 6.5;
-                let skillsScore = 7.0;
-                let bonusScore = 2.0;
-                let redFlagsPenalty = -1.0;
+                // Show loading state
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Calculating...';
+                loading.style.display = 'block';
+                result.style.display = 'none';
                 
-                // Adjust scores based on content analysis
-                if (resumeText.includes('mit') || resumeText.includes('stanford') || resumeText.includes('harvard')) {
-                    educationScore = 9.0;
-                }
-                if (resumeText.includes('senior') || resumeText.includes('lead') || resumeText.includes('manager')) {
-                    careerScore = 8.5;
-                }
-                if (resumeText.includes('google') || resumeText.includes('microsoft') || resumeText.includes('amazon')) {
-                    companyScore = 8.5;
-                }
-                if (resumeText.includes('blockchain') || resumeText.includes('ai') || resumeText.includes('machine learning')) {
-                    skillsScore = 8.5;
-                    bonusScore = 3.0;
-                }
-                if (jobText.includes('aws') || jobText.includes('gcp') || jobText.includes('devops')) {
-                    if (resumeText.includes('aws') || resumeText.includes('gcp') || resumeText.includes('docker')) {
-                        skillsScore += 1.0;
+                // Simulate processing time
+                setTimeout(function() {
+                    // Get input values
+                    const resumeText = document.getElementById('resume').value.toLowerCase();
+                    const jobText = document.getElementById('jobDescription').value.toLowerCase();
+                    
+                    // Initialize scores
+                    let educationScore = 7.0;
+                    let careerScore = 7.5;
+                    let companyScore = 7.0;
+                    let tenureScore = 6.5;
+                    let skillsScore = 7.0;
+                    let bonusScore = 2.0;
+                    let redFlagsPenalty = -1.0;
+                    
+                    // Analyze education
+                    if (resumeText.includes('iit') || resumeText.includes('mit') || resumeText.includes('stanford') || resumeText.includes('harvard')) {
+                        educationScore = 9.0;
+                    } else if (resumeText.includes('university') || resumeText.includes('college')) {
+                        educationScore = 7.5;
                     }
-                }
-                
-                // Calculate total score
-                const totalScore = (
-                    educationScore * 0.20 +
-                    careerScore * 0.20 +
-                    companyScore * 0.15 +
-                    tenureScore * 0.15 +
-                    skillsScore * 0.20 +
-                    bonusScore * 0.05
-                ) + redFlagsPenalty;
-                
-                const demoResult = {
-                    success: true,
-                    total_score: Math.round(totalScore * 10) / 10,
-                    education_score: educationScore,
-                    career_trajectory_score: careerScore,
-                    company_relevance_score: companyScore,
-                    tenure_stability_score: tenureScore,
-                    most_important_skills_score: skillsScore,
-                    bonus_signals_score: bonusScore,
-                    red_flags_penalty: redFlagsPenalty,
-                    submittable: totalScore >= 8.2,
-                    recommendations: [
-                        "Resume shows strong technical background",
-                        "Good alignment with job requirements",
-                        "Consider for technical interview",
-                        "Monitor for specific skill gaps",
-                        "Overall candidate shows promise"
-                    ]
-                };
-                
-                // Display results
-                document.getElementById('totalScore').textContent = demoResult.total_score;
-                document.getElementById('educationScore').textContent = demoResult.education_score;
-                document.getElementById('careerScore').textContent = demoResult.career_trajectory_score;
-                document.getElementById('companyScore').textContent = demoResult.company_relevance_score;
-                document.getElementById('tenureScore').textContent = demoResult.tenure_stability_score;
-                document.getElementById('skillsScore').textContent = demoResult.most_important_skills_score;
-                document.getElementById('bonusScore').textContent = demoResult.bonus_signals_score;
-                document.getElementById('redFlagsScore').textContent = demoResult.red_flags_penalty;
-                
-                const statusElement = document.getElementById('submittableStatus');
-                if (demoResult.submittable) {
-                    statusElement.innerHTML = '<span class="submittable">✅ SUBMITTABLE CANDIDATE</span>';
-                } else {
-                    statusElement.innerHTML = '<span class="not-submittable">❌ RECOMMENDED REJECT</span>';
-                }
-                
-                const recommendationsList = document.getElementById('recommendations');
-                recommendationsList.innerHTML = '';
-                demoResult.recommendations.forEach(rec => {
-                    const li = document.createElement('li');
-                    li.textContent = rec;
-                    recommendationsList.appendChild(li);
-                });
-                
-                result.style.display = 'block';
-                
-            } catch (error) {
-                alert('Error: ' + error.message);
-            } finally {
-                // Reset button state
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Calculate FitScore';
-                loading.style.display = 'none';
-            }
+                    
+                    // Analyze career trajectory
+                    if (resumeText.includes('lead') || resumeText.includes('manager') || resumeText.includes('senior')) {
+                        careerScore = 8.5;
+                    } else if (resumeText.includes('intern') || resumeText.includes('developer')) {
+                        careerScore = 7.0;
+                    }
+                    
+                    // Analyze company relevance
+                    if (resumeText.includes('amazon') || resumeText.includes('siemens') || resumeText.includes('google') || resumeText.includes('microsoft')) {
+                        companyScore = 8.5;
+                    } else if (resumeText.includes('startup') || resumeText.includes('company')) {
+                        companyScore = 7.0;
+                    }
+                    
+                    // Analyze skills
+                    if (resumeText.includes('ai') || resumeText.includes('machine learning') || resumeText.includes('llm') || resumeText.includes('genai')) {
+                        skillsScore = 8.5;
+                        bonusScore = 3.0;
+                    }
+                    if (resumeText.includes('python') || resumeText.includes('tensorflow') || resumeText.includes('pytorch')) {
+                        skillsScore += 0.5;
+                    }
+                    if (resumeText.includes('azure') || resumeText.includes('aws') || resumeText.includes('gcp')) {
+                        skillsScore += 0.5;
+                    }
+                    
+                    // Check for job requirements match
+                    if (jobText.includes('ai') || jobText.includes('genai') || jobText.includes('llm')) {
+                        if (resumeText.includes('ai') || resumeText.includes('genai') || resumeText.includes('llm')) {
+                            skillsScore += 1.0;
+                        }
+                    }
+                    if (jobText.includes('azure') || jobText.includes('power bi') || jobText.includes('sharepoint')) {
+                        if (resumeText.includes('azure') || resumeText.includes('power bi') || resumeText.includes('sharepoint')) {
+                            skillsScore += 0.5;
+                        }
+                    }
+                    
+                    // Calculate total score
+                    const totalScore = (
+                        educationScore * 0.20 +
+                        careerScore * 0.20 +
+                        companyScore * 0.15 +
+                        tenureScore * 0.15 +
+                        skillsScore * 0.20 +
+                        bonusScore * 0.05
+                    ) + redFlagsPenalty;
+                    
+                    // Generate recommendations
+                    const recommendations = [];
+                    if (educationScore >= 8.0) {
+                        recommendations.push("Strong educational background from prestigious institution");
+                    }
+                    if (careerScore >= 8.0) {
+                        recommendations.push("Good career progression with leadership experience");
+                    }
+                    if (skillsScore >= 8.0) {
+                        recommendations.push("Excellent technical skills matching job requirements");
+                    }
+                    if (resumeText.includes('amazon') || resumeText.includes('siemens')) {
+                        recommendations.push("Experience with top-tier companies is a strong positive");
+                    }
+                    if (resumeText.includes('ai') && jobText.includes('ai')) {
+                        recommendations.push("Perfect alignment with AI/GenAI role requirements");
+                    }
+                    if (totalScore < 8.2) {
+                        recommendations.push("Consider for interview but monitor specific skill gaps");
+                    }
+                    
+                    // Display results
+                    document.getElementById('totalScore').textContent = totalScore.toFixed(1);
+                    document.getElementById('educationScore').textContent = educationScore.toFixed(1);
+                    document.getElementById('careerScore').textContent = careerScore.toFixed(1);
+                    document.getElementById('companyScore').textContent = companyScore.toFixed(1);
+                    document.getElementById('tenureScore').textContent = tenureScore.toFixed(1);
+                    document.getElementById('skillsScore').textContent = skillsScore.toFixed(1);
+                    document.getElementById('bonusScore').textContent = bonusScore.toFixed(1);
+                    document.getElementById('redFlagsScore').textContent = redFlagsPenalty.toFixed(1);
+                    
+                    const statusElement = document.getElementById('submittableStatus');
+                    if (totalScore >= 8.2) {
+                        statusElement.innerHTML = '<span class="submittable">✅ SUBMITTABLE CANDIDATE</span>';
+                    } else {
+                        statusElement.innerHTML = '<span class="not-submittable">❌ RECOMMENDED REJECT</span>';
+                    }
+                    
+                    const recommendationsList = document.getElementById('recommendations');
+                    recommendationsList.innerHTML = '';
+                    recommendations.forEach(rec => {
+                        const li = document.createElement('li');
+                        li.textContent = rec;
+                        recommendationsList.appendChild(li);
+                    });
+                    
+                    // Show results
+                    result.style.display = 'block';
+                    
+                    // Reset button
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Calculate FitScore';
+                    loading.style.display = 'none';
+                    
+                }, 2000);
+            });
         });
     </script>
 </body>
