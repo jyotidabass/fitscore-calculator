@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>FitScore Calculator</title>
     <style>
         body { 
@@ -228,6 +231,11 @@
     </div>
     
     <script>
+        // Force cache refresh
+        if (window.location.search === '') {
+            window.location.search = '?v=' + Date.now();
+        }
+        
         document.getElementById('fitscoreForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
@@ -240,16 +248,6 @@
             submitBtn.textContent = 'Calculating...';
             loading.style.display = 'block';
             result.style.display = 'none';
-            
-            const formData = new FormData();
-            formData.append('resume_text', document.getElementById('resume').value);
-            formData.append('job_description', document.getElementById('jobDescription').value);
-            formData.append('use_gpt4', 'true');
-            
-            const apiKey = document.getElementById('apiKey').value;
-            if (apiKey) {
-                formData.append('openai_api_key', apiKey);
-            }
             
             try {
                 // Simulate API processing time
