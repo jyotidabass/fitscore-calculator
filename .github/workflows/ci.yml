@@ -16,6 +16,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
+    - name: Debug - List files
+      run: |
+        echo "Current directory: $(pwd)"
+        echo "Files in current directory:"
+        ls -la
+        echo "Files in repository root:"
+        find . -maxdepth 1 -type f -name "*.py" | head -10
+    
     - name: Set up Python 3.9
       uses: actions/setup-python@v4
       with:
