@@ -18,28 +18,50 @@ def start_server():
     """Start the FastAPI server in the background"""
     print("🚀 Starting FastAPI server...")
     try:
-        # Start the server in the background
+        # Check if fitscore_calculator.py exists
+        if not os.path.exists("fitscore_calculator.py"):
+            print("❌ fitscore_calculator.py not found!")
+            return None
+        
+        # Start the server in the background with more verbose output
         process = subprocess.Popen([
             sys.executable, "-m", "uvicorn", 
             "fitscore_calculator:app", 
             "--host", "0.0.0.0", 
-            "--port", "8000"
+            "--port", "8000",
+            "--log-level", "info"
         ], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         
-        # Wait for server to start
-        time.sleep(5)
+        print(f"✅ Server process started with PID: {process.pid}")
         
-        # Check if server is running
-        try:
-            response = requests.get(f"{BASE_URL}/health", timeout=5)
-            if response.status_code == 200:
-                print("✅ Server started successfully")
-                return process
-            else:
-                print(f"❌ Server health check failed: {response.status_code}")
-                return None
-        except requests.exceptions.RequestException as e:
-            print(f"❌ Server not responding: {e}")
+        # Wait longer for server to start
+        print("⏳ Waiting for server to start...")
+        for i in range(10):  # Wait up to 10 seconds
+            time.sleep(1)
+            try:
+                response = requests.get(f"{BASE_URL}/health", timeout=2)
+                if response.status_code == 200:
+                    print("✅ Server started successfully and responding!")
+                    return process
+                else:
+                    print(f"⚠️ Server responding but status code: {response.status_code}")
+            except requests.exceptions.RequestException as e:
+                print(f"⏳ Still waiting... ({i+1}/10) - {e}")
+                continue
+        
+        # If we get here, server didn't start properly
+        print("❌ Server failed to start within timeout")
+        
+        # Check if process is still running
+        if process.poll() is None:
+            print("⚠️ Process is still running but not responding")
+            return process
+        else:
+            print("❌ Process has terminated")
+            # Get any error output
+            stdout, stderr = process.communicate()
+            if stderr:
+                print(f"Server stderr: {stderr.decode()}")
             return None
             
     except Exception as e:
@@ -49,15 +71,21 @@ def start_server():
 def stop_server(process):
     """Stop the FastAPI server"""
     if process:
-        print("�� Stopping server...")
-        process.terminate()
-        process.wait()
+        print("🛑 Stopping server...")
+        try:
+            process.terminate()
+            process.wait(timeout=5)
+            print("✅ Server stopped successfully")
+        except subprocess.TimeoutExpired:
+            print("⚠️ Server didn't stop gracefully, forcing...")
+            process.kill()
+            process.wait()
 
 def test_health():
     """Test health check endpoint"""
     print("🔍 Testing health check...")
     try:
-        response = requests.get(f"{BASE_URL}/health")
+        response = requests.get(f"{BASE_URL}/health", timeout=5)
         if response.status_code == 200:
             print("✅ Health check passed")
             print(f"Response: {response.json()}")
@@ -73,7 +101,7 @@ def test_api_docs():
     """Test API documentation endpoint"""
     print("\n🔍 Testing API docs...")
     try:
-        response = requests.get(f"{BASE_URL}/api-docs")
+        response = requests.get(f"{BASE_URL}/api-docs", timeout=5)
         if response.status_code == 200:
             print("✅ API docs endpoint working")
             print(f"Available endpoints: {list(response.json()['endpoints'].keys())}")
@@ -146,7 +174,8 @@ Nice to have:
         response = requests.post(
             f"{BASE_URL}/calculate-fitscore",
             json=sample_data,
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
+            timeout=30
         )
         
         if response.status_code == 200:
@@ -176,7 +205,8 @@ def test_form_endpoint():
     try:
         response = requests.post(
             f"{BASE_URL}/calculate-fitscore-form",
-            data=form_data
+            data=form_data,
+            timeout=30
         )
         
         if response.status_code == 200:
@@ -200,6 +230,10 @@ def main():
     """Run all tests"""
     print("🚀 Starting FitScore Calculator API Tests")
     print("=" * 50)
+    
+    # Check if we're in the right directory
+    print(f"Current directory: {os.getcwd()}")
+    print(f"Files in current directory: {os.listdir('.')}")
     
     # Start the server
     server_process = start_server()
@@ -225,7 +259,7 @@ def main():
             tests_passed += 1
         
         print("\n" + "=" * 50)
-        print(f"�� Tests completed! {tests_passed}/{total_tests} tests passed")
+        print(f"🎉 Tests completed! {tests_passed}/{total_tests} tests passed")
         
         if tests_passed == total_tests:
             print("✅ All tests passed!")
@@ -239,4 +273,4 @@ def main():
         stop_server(server_process)
 
 if __name__ == "__main__":
-    main()
+    main() 
