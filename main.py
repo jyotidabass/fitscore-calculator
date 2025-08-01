@@ -98,7 +98,7 @@ async def calculate_fitscore_form(
     job_description: str = Form(...),
     collateral: Optional[str] = Form(None),
     openai_api_key: Optional[str] = Form(None),
-    use_gpt4: bool = Form(True)
+    use_gpt4: str = Form("on")
 ):
     """
     Calculate FitScore using form data (for web interface)
@@ -110,12 +110,15 @@ async def calculate_fitscore_form(
             global calculator
             calculator = FitScoreCalculator(openai_api_key=openai_api_key)
         
+        # Convert checkbox value to boolean
+        use_gpt4_bool = use_gpt4 == "on"
+        
         # Calculate FitScore
         result = calculator.calculate_fitscore(
             resume_text=resume_text,
             job_description=job_description,
             collateral=collateral,
-            use_gpt4=use_gpt4
+            use_gpt4=use_gpt4_bool
         )
         
         # Return results for template
@@ -167,4 +170,4 @@ async def api_docs():
     }
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="127.0.0.1", port=8000) 
