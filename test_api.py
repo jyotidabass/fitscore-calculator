@@ -18,15 +18,15 @@ def start_server():
     """Start the FastAPI server in the background"""
     print("🚀 Starting FastAPI server...")
     try:
-        # Check if fitscore_calculator.py exists
-        if not os.path.exists("fitscore_calculator.py"):
-            print("❌ fitscore_calculator.py not found!")
+        # Check if main.py exists
+        if not os.path.exists("main.py"):
+            print("❌ main.py not found!")
             return None
         
         # Start the server in the background with more verbose output
         process = subprocess.Popen([
             sys.executable, "-m", "uvicorn", 
-            "fitscore_calculator:app", 
+            "main:app", 
             "--host", "0.0.0.0", 
             "--port", "8000",
             "--log-level", "info"
