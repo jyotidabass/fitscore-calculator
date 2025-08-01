@@ -27,11 +27,17 @@ jobs:
         pip install -r requirements.txt
         pip install pytest pytest-asyncio httpx
     
-    - name: Run tests
+    - name: Run basic tests
+      run: |
+        python test_basic.py
+      timeout-minutes: 5
+    
+    - name: Run full tests
       run: |
         python test_api.py
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      timeout-minutes: 10
 
   test-python-310:
     runs-on: ubuntu-latest
@@ -52,11 +58,17 @@ jobs:
         pip install -r requirements.txt
         pip install pytest pytest-asyncio httpx
     
-    - name: Run tests
+    - name: Run basic tests
+      run: |
+        python test_basic.py
+      timeout-minutes: 5
+    
+    - name: Run full tests
       run: |
         python test_api.py
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      timeout-minutes: 10
 
   test-python-311:
     runs-on: ubuntu-latest
@@ -77,11 +89,17 @@ jobs:
         pip install -r requirements.txt
         pip install pytest pytest-asyncio httpx
     
-    - name: Run tests
+    - name: Run basic tests
+      run: |
+        python test_basic.py
+      timeout-minutes: 5
+    
+    - name: Run full tests
       run: |
         python test_api.py
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      timeout-minutes: 10
 
   docker-build:
     runs-on: ubuntu-latest
