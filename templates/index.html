@@ -243,6 +243,10 @@
                     body: formData
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const result = await response.json();
                 
                 if (result.success) {
@@ -251,6 +255,7 @@
                     alert('Error: ' + result.error);
                 }
             } catch (error) {
+                console.error('Error:', error);
                 alert('Error: ' + error.message);
             } finally {
                 document.getElementById('loading').classList.remove('show');
