@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitScore Calculator - NEW VERSION</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container { 
+            background: white; 
+            padding: 30px; 
+            border-radius: 12px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .form-group { margin-bottom: 20px; }
+        label { 
+            display: block; 
+            margin-bottom: 8px; 
+            font-weight: bold; 
+            color: #333;
+        }
+        textarea { 
+            width: 100%; 
+            height: 150px; 
+            padding: 15px; 
+            border: 2px solid #e1e5e9; 
+            border-radius: 8px; 
+            font-size: 14px;
+            resize: vertical;
+        }
+        button { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            padding: 15px 30px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 16px;
+            font-weight: bold;
+        }
+        .result { 
+            margin-top: 30px; 
+            padding: 25px; 
+            background: #f8f9fa; 
+            border-radius: 8px; 
+            border-left: 4px solid #667eea;
+        }
+        .score { 
+            font-size: 28px; 
+            font-weight: bold; 
+            color: #667eea; 
+            margin-bottom: 10px;
+        }
+        .submittable { 
+            color: #28a745; 
+            font-weight: bold; 
+            font-size: 18px;
+        }
+        .not-submittable { 
+            color: #dc3545; 
+            font-weight: bold; 
+            font-size: 18px;
+        }
+        .category-scores {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .category-score {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e1e5e9;
+        }
+        .category-score h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 14px;
+        }
+        .category-score .value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 FitScore Calculator - NEW VERSION</h1>
+        <p>This is a completely new version to avoid cache issues.</p>
+        
+        <form id="fitscoreForm">
+            <div class="form-group">
+                <label for="resume">Resume Text:</label>
+                <textarea id="resume" name="resume" placeholder="Paste the candidate's resume here..." required></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="jobDescription">Job Description:</label>
+                <textarea id="jobDescription" name="jobDescription" placeholder="Paste the job description here..." required></textarea>
+            </div>
+            
+            <button type="submit" id="submitBtn">Calculate FitScore</button>
+        </form>
+        
+        <div id="result" class="result" style="display: none;">
+            <h2>FitScore Results</h2>
+            <div class="score">Total Score: <span id="totalScore">-</span></div>
+            <div id="submittableStatus"></div>
+            
+            <div class="category-scores">
+                <div class="category-score">
+                    <h4>Education</h4>
+                    <div class="value" id="educationScore">-</div>
+                </div>
+                <div class="category-score">
+                    <h4>Career Trajectory</h4>
+                    <div class="value" id="careerScore">-</div>
+                </div>
+                <div class="category-score">
+                    <h4>Company Relevance</h4>
+                    <div class="value" id="companyScore">-</div>
+                </div>
+                <div class="category-score">
+                    <h4>Tenure Stability</h4>
+                    <div class="value" id="tenureScore">-</div>
+                </div>
+                <div class="category-score">
+                    <h4>Most Important Skills</h4>
+                    <div class="value" id="skillsScore">-</div>
+                </div>
+                <div class="category-score">
+                    <h4>Bonus Signals</h4>
+                    <div class="value" id="bonusScore">-</div>
+                </div>
+                <div class="category-score">
+                    <h4>Red Flags Penalty</h4>
+                    <div class="value" id="redFlagsScore">-</div>
+                </div>
+            </div>
+            
+            <div id="recommendations"></div>
+        </div>
+    </div>
+    
+    <script>
+        console.log('NEW FitScore Calculator loaded successfully!');
+        
+        document.getElementById('fitscoreForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            console.log('Form submitted - analyzing content...');
+            
+            const resumeText = document.getElementById('resume').value.toLowerCase();
+            const jobText = document.getElementById('jobDescription').value.toLowerCase();
+            
+            // Initialize scores
+            let educationScore = 7.0;
+            let careerScore = 7.5;
+            let companyScore = 7.0;
+            let tenureScore = 6.5;
+            let skillsScore = 7.0;
+            let bonusScore = 2.0;
+            let redFlagsPenalty = -1.0;
+            
+            // Analyze education
+            if (resumeText.includes('iit') || resumeText.includes('mit') || resumeText.includes('stanford') || resumeText.includes('harvard')) {
+                educationScore = 9.0;
+            } else if (resumeText.includes('university') || resumeText.includes('college')) {
+                educationScore = 7.5;
+            }
+            
+            // Analyze career trajectory
+            if (resumeText.includes('lead') || resumeText.includes('manager') || resumeText.includes('senior')) {
+                careerScore = 8.5;
+            } else if (resumeText.includes('intern') || resumeText.includes('developer')) {
+                careerScore = 7.0;
+            }
+            
+            // Analyze company relevance
+            if (resumeText.includes('amazon') || resumeText.includes('siemens') || resumeText.includes('google') || resumeText.includes('microsoft')) {
+                companyScore = 8.5;
+            } else if (resumeText.includes('startup') || resumeText.includes('company')) {
+                companyScore = 7.0;
+            }
+            
+            // Analyze skills
+            if (resumeText.includes('ai') || resumeText.includes('machine learning') || resumeText.includes('llm') || resumeText.includes('genai')) {
+                skillsScore = 8.5;
+                bonusScore = 3.0;
+            }
+            if (resumeText.includes('python') || resumeText.includes('tensorflow') || resumeText.includes('pytorch')) {
+                skillsScore += 0.5;
+            }
+            if (resumeText.includes('azure') || resumeText.includes('aws') || resumeText.includes('gcp')) {
+                skillsScore += 0.5;
+            }
+            
+            // Check for job requirements match
+            if (jobText.includes('ai') || jobText.includes('genai') || jobText.includes('llm')) {
+                if (resumeText.includes('ai') || resumeText.includes('genai') || resumeText.includes('llm')) {
+                    skillsScore += 1.0;
+                }
+            }
+            if (jobText.includes('azure') || jobText.includes('power bi') || jobText.includes('sharepoint')) {
+                if (resumeText.includes('azure') || resumeText.includes('power bi') || resumeText.includes('sharepoint')) {
+                    skillsScore += 0.5;
+                }
+            }
+            
+            // Calculate total score
+            const totalScore = (
+                educationScore * 0.20 +
+                careerScore * 0.20 +
+                companyScore * 0.15 +
+                tenureScore * 0.15 +
+                skillsScore * 0.20 +
+                bonusScore * 0.05
+            ) + redFlagsPenalty;
+            
+            // Generate recommendations
+            const recommendations = [];
+            if (educationScore >= 8.0) {
+                recommendations.push("Strong educational background from prestigious institution");
+            }
+            if (careerScore >= 8.0) {
+                recommendations.push("Good career progression with leadership experience");
+            }
+            if (skillsScore >= 8.0) {
+                recommendations.push("Excellent technical skills matching job requirements");
+            }
+            if (resumeText.includes('amazon') || resumeText.includes('siemens')) {
+                recommendations.push("Experience with top-tier companies is a strong positive");
+            }
+            if (resumeText.includes('ai') && jobText.includes('ai')) {
+                recommendations.push("Perfect alignment with AI/GenAI role requirements");
+            }
+            if (totalScore < 8.2) {
+                recommendations.push("Consider for interview but monitor specific skill gaps");
+            }
+            
+            // Display results
+            document.getElementById('totalScore').textContent = totalScore.toFixed(1);
+            document.getElementById('educationScore').textContent = educationScore.toFixed(1);
+            document.getElementById('careerScore').textContent = careerScore.toFixed(1);
+            document.getElementById('companyScore').textContent = companyScore.toFixed(1);
+            document.getElementById('tenureScore').textContent = tenureScore.toFixed(1);
+            document.getElementById('skillsScore').textContent = skillsScore.toFixed(1);
+            document.getElementById('bonusScore').textContent = bonusScore.toFixed(1);
+            document.getElementById('redFlagsScore').textContent = redFlagsPenalty.toFixed(1);
+            
+            const statusElement = document.getElementById('submittableStatus');
+            if (totalScore >= 8.2) {
+                statusElement.innerHTML = '<span class="submittable">✅ SUBMITTABLE CANDIDATE</span>';
+            } else {
+                statusElement.innerHTML = '<span class="not-submittable">❌ RECOMMENDED REJECT</span>';
+            }
+            
+            const recommendationsList = document.getElementById('recommendations');
+            recommendationsList.innerHTML = '<h3>Recommendations:</h3><ul>' + 
+                recommendations.map(rec => '<li>' + rec + '</li>').join('') + '</ul>';
+            
+            document.getElementById('result').style.display = 'block';
+            
+            console.log('Analysis complete - Score:', totalScore.toFixed(1));
+        });
+    </script>
+</body>
+</html> 
