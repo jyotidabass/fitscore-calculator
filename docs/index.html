@@ -252,28 +252,69 @@
             }
             
             try {
-                // For GitHub Pages, we need to use a different approach since we can't run the FastAPI server
-                // This is a demo version that shows the interface
-                await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call
+                // Simulate API processing time
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 
-                // Demo results (replace with actual API call when backend is available)
+                // Generate demo results based on input content
+                const resumeText = document.getElementById('resume').value.toLowerCase();
+                const jobText = document.getElementById('jobDescription').value.toLowerCase();
+                
+                // Simple scoring logic for demo
+                let educationScore = 7.0;
+                let careerScore = 7.5;
+                let companyScore = 7.0;
+                let tenureScore = 6.5;
+                let skillsScore = 7.0;
+                let bonusScore = 2.0;
+                let redFlagsPenalty = -1.0;
+                
+                // Adjust scores based on content analysis
+                if (resumeText.includes('mit') || resumeText.includes('stanford') || resumeText.includes('harvard')) {
+                    educationScore = 9.0;
+                }
+                if (resumeText.includes('senior') || resumeText.includes('lead') || resumeText.includes('manager')) {
+                    careerScore = 8.5;
+                }
+                if (resumeText.includes('google') || resumeText.includes('microsoft') || resumeText.includes('amazon')) {
+                    companyScore = 8.5;
+                }
+                if (resumeText.includes('blockchain') || resumeText.includes('ai') || resumeText.includes('machine learning')) {
+                    skillsScore = 8.5;
+                    bonusScore = 3.0;
+                }
+                if (jobText.includes('aws') || jobText.includes('gcp') || jobText.includes('devops')) {
+                    if (resumeText.includes('aws') || resumeText.includes('gcp') || resumeText.includes('docker')) {
+                        skillsScore += 1.0;
+                    }
+                }
+                
+                // Calculate total score
+                const totalScore = (
+                    educationScore * 0.20 +
+                    careerScore * 0.20 +
+                    companyScore * 0.15 +
+                    tenureScore * 0.15 +
+                    skillsScore * 0.20 +
+                    bonusScore * 0.05
+                ) + redFlagsPenalty;
+                
                 const demoResult = {
                     success: true,
-                    total_score: 7.8,
-                    education_score: 8.5,
-                    career_trajectory_score: 8.2,
-                    company_relevance_score: 7.5,
-                    tenure_stability_score: 7.0,
-                    most_important_skills_score: 8.0,
-                    bonus_signals_score: 3.0,
-                    red_flags_penalty: -2.0,
-                    submittable: false,
+                    total_score: Math.round(totalScore * 10) / 10,
+                    education_score: educationScore,
+                    career_trajectory_score: careerScore,
+                    company_relevance_score: companyScore,
+                    tenure_stability_score: tenureScore,
+                    most_important_skills_score: skillsScore,
+                    bonus_signals_score: bonusScore,
+                    red_flags_penalty: redFlagsPenalty,
+                    submittable: totalScore >= 8.2,
                     recommendations: [
-                        "Strong educational background with MIT degree",
-                        "Good career progression in tech companies",
-                        "Skills match well with job requirements",
-                        "Consider for interview but monitor tenure concerns",
-                        "Bonus signals show initiative and leadership"
+                        "Resume shows strong technical background",
+                        "Good alignment with job requirements",
+                        "Consider for technical interview",
+                        "Monitor for specific skill gaps",
+                        "Overall candidate shows promise"
                     ]
                 };
                 
