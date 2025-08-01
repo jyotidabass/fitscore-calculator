@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FitScore Calculator - AI-Powered Candidate Evaluation</title>
+    <title>FitScore Calculator - Static Version</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -39,7 +39,7 @@
     <header class="gradient-bg text-white py-8">
         <div class="container mx-auto px-6">
             <h1 class="text-4xl font-bold text-center mb-2">FitScore Calculator</h1>
-            <p class="text-xl text-center opacity-90">AI-Powered Candidate Evaluation with GPT-4o-mini Integration</p>
+            <p class="text-xl text-center opacity-90">AI-Powered Candidate Evaluation (Static Version)</p>
         </div>
     </header>
 
@@ -51,23 +51,6 @@
                 <h2 class="text-2xl font-bold text-gray-800 mb-6">Evaluate Candidate Fit</h2>
                 
                 <form id="fitscoreForm" class="space-y-6">
-                    <!-- OpenAI API Key -->
-                    <div>
-                        <label for="openai_api_key" class="block text-sm font-medium text-gray-700 mb-2">
-                            OpenAI API Key (Optional - for GPT-4o-mini features)
-                        </label>
-                        <input 
-                            type="password" 
-                            id="openai_api_key" 
-                            name="openai_api_key"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            placeholder="sk-..."
-                        >
-                        <p class="text-sm text-gray-500 mt-1">
-                            Leave empty to use environment variable or disable GPT-4 features
-                        </p>
-                    </div>
-
                     <!-- Resume Text -->
                     <div>
                         <label for="resume_text" class="block text-sm font-medium text-gray-700 mb-2">
@@ -112,20 +95,6 @@
                         ></textarea>
                     </div>
 
-                    <!-- GPT-4 Toggle -->
-                    <div class="flex items-center">
-                        <input 
-                            type="checkbox" 
-                            id="use_gpt4" 
-                            name="use_gpt4"
-                            checked
-                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                        >
-                        <label for="use_gpt4" class="ml-2 block text-sm text-gray-700">
-                            Enable GPT-4o-mini features (recommended)
-                        </label>
-                    </div>
-
                     <!-- Submit Button -->
                     <button 
                         type="submit"
@@ -139,7 +108,7 @@
             <!-- Loading Section -->
             <div id="loading" class="loading bg-white rounded-lg card-shadow p-8 mb-8 text-center">
                 <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p class="text-lg text-gray-700">Analyzing candidate fit with AI...</p>
+                <p class="text-lg text-gray-700">Analyzing candidate fit...</p>
                 <p class="text-sm text-gray-500 mt-2">This may take a few moments</p>
             </div>
 
@@ -220,12 +189,47 @@
     <!-- Footer -->
     <footer class="bg-gray-800 text-white py-6 mt-12">
         <div class="container mx-auto px-6 text-center">
-            <p>&copy; 2024 FitScore Calculator. Powered by GPT-4o-mini AI.</p>
+            <p>&copy; 2024 FitScore Calculator. Static Version for GitHub Pages.</p>
         </div>
     </footer>
 
     <script>
         let scoreChart = null;
+
+        // Elite schools database
+        const tier1Schools = {
+            "US_TOP15": [
+                "MIT", "Stanford", "Harvard", "Berkeley", "CMU", "Caltech", 
+                "Princeton", "Yale", "Columbia", "UPenn", "Cornell", 
+                "University of Chicago", "Northwestern", "Johns Hopkins", "Brown"
+            ],
+            "ENGINEERING_CS_ELITE": [
+                "University of Waterloo", "Georgia Tech", "UIUC", "UT Austin", 
+                "UW Seattle", "Purdue", "Virginia Tech"
+            ],
+            "INTERNATIONAL_ELITE": [
+                "Oxford", "Cambridge", "ETH Zurich", "University of Toronto", 
+                "IIT", "Tsinghua", "Peking University", "National University of Singapore",
+                "University of Melbourne", "KAIST", "Technion"
+            ]
+        };
+
+        const tier2Schools = [
+            "UCLA", "UCSD", "USC", "Michigan", "Wisconsin", "Washington",
+            "North Carolina", "Virginia", "NYU", "Boston University",
+            "Rice", "Vanderbilt", "Emory", "Georgetown", "Notre Dame",
+            "Duke", "Dartmouth", "William & Mary", "Boston College"
+        ];
+
+        // Skills database
+        const technicalSkills = [
+            "python", "javascript", "java", "c++", "c#", "go", "rust", "swift", "kotlin",
+            "react", "angular", "vue", "node.js", "django", "flask", "spring",
+            "aws", "azure", "gcp", "docker", "kubernetes", "terraform",
+            "sql", "mongodb", "redis", "postgresql", "mysql",
+            "machine learning", "deep learning", "tensorflow", "pytorch", "scikit-learn",
+            "data science", "statistics", "algorithms", "data structures"
+        ];
 
         document.getElementById('fitscoreForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -236,24 +240,18 @@
             
             // Get form data
             const formData = new FormData(this);
+            const resumeText = formData.get('resume_text');
+            const jobDescription = formData.get('job_description');
+            const collateral = formData.get('collateral');
             
             try {
-                const response = await fetch('/calculate-fitscore-form', {
-                    method: 'POST',
-                    body: formData
-                });
+                // Simulate processing time
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                // Calculate FitScore
+                const result = calculateFitScore(resumeText, jobDescription, collateral);
                 
-                const result = await response.json();
-                
-                if (result.success) {
-                    displayResults(result);
-                } else {
-                    alert('Error: ' + result.error);
-                }
+                displayResults(result);
             } catch (error) {
                 console.error('Error:', error);
                 alert('Error: ' + error.message);
@@ -261,6 +259,305 @@
                 document.getElementById('loading').classList.remove('show');
             }
         });
+
+        function calculateFitScore(resumeText, jobDescription, collateral = '') {
+            const resume = resumeText.toLowerCase();
+            const job = jobDescription.toLowerCase();
+            
+            // Education Score (20%)
+            const educationScore = evaluateEducation(resume);
+            
+            // Career Trajectory Score (20%)
+            const careerScore = evaluateCareerTrajectory(resume);
+            
+            // Company Relevance Score (15%)
+            const companyScore = evaluateCompanyRelevance(resume, job);
+            
+            // Tenure Stability Score (15%)
+            const tenureScore = evaluateTenureStability(resume);
+            
+            // Skills Match Score (20%)
+            const skillsScore = evaluateSkillsMatch(resume, job);
+            
+            // Bonus Signals Score (5%)
+            const bonusScore = evaluateBonusSignals(resume);
+            
+            // Red Flags Penalty
+            const redFlagsPenalty = evaluateRedFlags(resume);
+            
+            // Calculate total score
+            const totalScore = Math.max(0, Math.min(10, 
+                educationScore * 0.20 +
+                careerScore * 0.20 +
+                companyScore * 0.15 +
+                tenureScore * 0.15 +
+                skillsScore * 0.20 +
+                bonusScore * 0.05 +
+                redFlagsPenalty
+            ));
+            
+            return {
+                success: true,
+                total_score: Math.round(totalScore * 100) / 100,
+                education_score: Math.round(educationScore * 100) / 100,
+                career_trajectory_score: Math.round(careerScore * 100) / 100,
+                company_relevance_score: Math.round(companyScore * 100) / 100,
+                tenure_stability_score: Math.round(tenureScore * 100) / 100,
+                most_important_skills_score: Math.round(skillsScore * 100) / 100,
+                bonus_signals_score: Math.round(bonusScore * 100) / 100,
+                red_flags_penalty: Math.round(redFlagsPenalty * 100) / 100,
+                submittable: totalScore >= 8.2,
+                recommendations: generateRecommendations(totalScore, educationScore, careerScore, companyScore, tenureScore, skillsScore, bonusScore, redFlagsPenalty),
+                details: {
+                    education: { tier: getEducationTier(resume) },
+                    career_trajectory: { progression_level: getCareerProgression(resume) },
+                    company_relevance: { role_type: getRoleType(job), target_company_type: getCompanyType(job) },
+                    tenure_stability: { average_tenure: getAverageTenure(resume) },
+                    most_important_skills: { match_percentage: getSkillsMatchPercentage(resume, job) },
+                    bonus_signals: { signals_found: getBonusSignals(resume) }
+                },
+                timestamp: new Date().toISOString()
+            };
+        }
+
+        function evaluateEducation(resume) {
+            let score = 5.0; // Base score
+            
+            // Check for elite schools
+            for (const category in tier1Schools) {
+                for (const school of tier1Schools[category]) {
+                    if (resume.includes(school.toLowerCase())) {
+                        score = 9.5;
+                        break;
+                    }
+                }
+            }
+            
+            // Check for tier 2 schools
+            for (const school of tier2Schools) {
+                if (resume.includes(school.toLowerCase())) {
+                    score = Math.max(score, 8.0);
+                }
+            }
+            
+            // Check for advanced degrees
+            if (resume.includes('phd') || resume.includes('doctorate')) {
+                score += 1.0;
+            } else if (resume.includes('master') || resume.includes('ms') || resume.includes('mba')) {
+                score += 0.5;
+            }
+            
+            return Math.min(10, score);
+        }
+
+        function evaluateCareerTrajectory(resume) {
+            let score = 6.0;
+            
+            // Check for progression indicators
+            if (resume.includes('senior') || resume.includes('lead') || resume.includes('principal')) {
+                score += 2.0;
+            }
+            if (resume.includes('manager') || resume.includes('director') || resume.includes('vp')) {
+                score += 1.5;
+            }
+            if (resume.includes('cto') || resume.includes('ceo') || resume.includes('founder')) {
+                score += 2.0;
+            }
+            
+            // Check for years of experience
+            const experienceMatch = resume.match(/(\d+)\s*(?:years?|yrs?)/gi);
+            if (experienceMatch) {
+                const years = experienceMatch.map(match => parseInt(match.match(/\d+/)[0]));
+                const maxYears = Math.max(...years);
+                if (maxYears >= 10) score += 1.5;
+                else if (maxYears >= 5) score += 1.0;
+                else if (maxYears >= 3) score += 0.5;
+            }
+            
+            return Math.min(10, score);
+        }
+
+        function evaluateCompanyRelevance(resume, jobDescription) {
+            let score = 6.0;
+            
+            // Check for big tech companies
+            const bigTech = ['google', 'microsoft', 'apple', 'amazon', 'meta', 'facebook', 'netflix', 'uber', 'airbnb'];
+            for (const company of bigTech) {
+                if (resume.includes(company)) {
+                    score += 2.0;
+                    break;
+                }
+            }
+            
+            // Check for startup experience
+            if (resume.includes('startup') || resume.includes('founder') || resume.includes('co-founder')) {
+                score += 1.0;
+            }
+            
+            return Math.min(10, score);
+        }
+
+        function evaluateTenureStability(resume) {
+            let score = 7.0;
+            
+            // Check for job hopping (negative)
+            const jobCount = (resume.match(/experience|work|employment|job/gi) || []).length;
+            if (jobCount > 5) score -= 2.0;
+            else if (jobCount > 3) score -= 1.0;
+            
+            // Check for long tenure (positive)
+            if (resume.includes('5 years') || resume.includes('5+ years')) score += 1.0;
+            if (resume.includes('10 years') || resume.includes('10+ years')) score += 1.5;
+            
+            return Math.min(10, Math.max(0, score));
+        }
+
+        function evaluateSkillsMatch(resume, jobDescription) {
+            let score = 5.0;
+            let matches = 0;
+            let totalSkills = 0;
+            
+            for (const skill of technicalSkills) {
+                if (jobDescription.includes(skill)) {
+                    totalSkills++;
+                    if (resume.includes(skill)) {
+                        matches++;
+                    }
+                }
+            }
+            
+            if (totalSkills > 0) {
+                const matchPercentage = matches / totalSkills;
+                score = 5.0 + (matchPercentage * 5.0);
+            }
+            
+            return Math.min(10, score);
+        }
+
+        function evaluateBonusSignals(resume) {
+            let score = 5.0;
+            
+            // Check for bonus signals
+            if (resume.includes('open source') || resume.includes('github')) score += 1.0;
+            if (resume.includes('published') || resume.includes('research')) score += 1.0;
+            if (resume.includes('speaking') || resume.includes('conference')) score += 0.5;
+            if (resume.includes('award') || resume.includes('recognition')) score += 0.5;
+            if (resume.includes('patent')) score += 1.0;
+            
+            return Math.min(10, score);
+        }
+
+        function evaluateRedFlags(resume) {
+            let penalty = 0;
+            
+            // Check for red flags
+            if (resume.includes('fired') || resume.includes('terminated')) penalty -= 2.0;
+            if (resume.includes('gap') && resume.includes('year')) penalty -= 1.0;
+            if (resume.includes('unemployed')) penalty -= 1.5;
+            
+            return penalty;
+        }
+
+        function generateRecommendations(totalScore, educationScore, careerScore, companyScore, tenureScore, skillsScore, bonusScore, redFlagsPenalty) {
+            const recommendations = [];
+            
+            if (totalScore >= 9.0) {
+                recommendations.push("Exceptional candidate - Strongly recommend to proceed");
+            } else if (totalScore >= 8.2) {
+                recommendations.push("Strong candidate - Recommend to submit");
+            } else if (totalScore >= 7.0) {
+                recommendations.push("Good candidate but below elite bar - Consider carefully");
+            } else if (totalScore >= 5.0) {
+                recommendations.push("Average candidate - Significant concerns");
+            } else {
+                recommendations.push("Below average - Recommend rejection");
+            }
+            
+            if (educationScore < 7.0) {
+                recommendations.push("Consider education background - may need additional verification");
+            }
+            
+            if (skillsScore < 6.0) {
+                recommendations.push("Skills gap identified - may need additional training");
+            }
+            
+            if (redFlagsPenalty < 0) {
+                recommendations.push("Red flags detected - requires additional investigation");
+            }
+            
+            return recommendations;
+        }
+
+        // Helper functions
+        function getEducationTier(resume) {
+            for (const category in tier1Schools) {
+                for (const school of tier1Schools[category]) {
+                    if (resume.includes(school.toLowerCase())) {
+                        return 'Tier 1';
+                    }
+                }
+            }
+            for (const school of tier2Schools) {
+                if (resume.includes(school.toLowerCase())) {
+                    return 'Tier 2';
+                }
+            }
+            return 'Standard';
+        }
+
+        function getCareerProgression(resume) {
+            if (resume.includes('cto') || resume.includes('ceo')) return 'Executive';
+            if (resume.includes('director') || resume.includes('vp')) return 'Senior Management';
+            if (resume.includes('senior') || resume.includes('lead')) return 'Senior Level';
+            return 'Standard Progression';
+        }
+
+        function getRoleType(jobDescription) {
+            if (jobDescription.includes('manager') || jobDescription.includes('lead')) return 'Leadership';
+            if (jobDescription.includes('senior')) return 'Senior';
+            return 'Individual Contributor';
+        }
+
+        function getCompanyType(jobDescription) {
+            if (jobDescription.includes('startup')) return 'Startup';
+            if (jobDescription.includes('fortune') || jobDescription.includes('enterprise')) return 'Enterprise';
+            return 'Mid-size';
+        }
+
+        function getAverageTenure(resume) {
+            const experienceMatch = resume.match(/(\d+)\s*(?:years?|yrs?)/gi);
+            if (experienceMatch) {
+                const years = experienceMatch.map(match => parseInt(match.match(/\d+/)[0]));
+                return years.reduce((a, b) => a + b, 0) / years.length;
+            }
+            return 3.0;
+        }
+
+        function getSkillsMatchPercentage(resume, jobDescription) {
+            let matches = 0;
+            let totalSkills = 0;
+            
+            for (const skill of technicalSkills) {
+                if (jobDescription.includes(skill)) {
+                    totalSkills++;
+                    if (resume.includes(skill)) {
+                        matches++;
+                    }
+                }
+            }
+            
+            return totalSkills > 0 ? (matches / totalSkills) * 100 : 0;
+        }
+
+        function getBonusSignals(resume) {
+            const signals = [];
+            if (resume.includes('open source')) signals.push('Open Source Contributions');
+            if (resume.includes('published')) signals.push('Publications');
+            if (resume.includes('speaking')) signals.push('Speaking Engagements');
+            if (resume.includes('award')) signals.push('Awards');
+            if (resume.includes('patent')) signals.push('Patents');
+            return signals;
+        }
 
         function displayResults(result) {
             // Overall score
@@ -338,65 +635,11 @@
                 recommendationsDiv.appendChild(recDiv);
             });
 
-            // Detailed analysis
-            displayDetailedAnalysis(result.details);
-
             // Create chart
             createScoreChart(result);
 
             // Show results
             document.getElementById('results').classList.add('show');
-        }
-
-        function displayDetailedAnalysis(details) {
-            const analysisDiv = document.getElementById('detailedAnalysis');
-            analysisDiv.innerHTML = '';
-
-            // GPT-4 features
-            if (details.gpt4_enhanced) {
-                const gptDiv = document.createElement('div');
-                gptDiv.className = 'p-4 bg-green-50 border border-green-200 rounded-lg';
-                gptDiv.innerHTML = `
-                    <h4 class="font-semibold text-green-800 mb-2">🤖 GPT-4o-mini Analysis</h4>
-                    <p class="text-green-700">Enhanced analysis with AI-powered context detection and smart criteria generation.</p>
-                `;
-                analysisDiv.appendChild(gptDiv);
-            }
-
-            // Context detection
-            if (details.context_detection) {
-                const contextDiv = document.createElement('div');
-                contextDiv.className = 'p-4 bg-gray-50 border border-gray-200 rounded-lg';
-                contextDiv.innerHTML = `
-                    <h4 class="font-semibold text-gray-800 mb-2">🎯 Detected Context</h4>
-                    <p><strong>Industry:</strong> ${details.context_detection.industry || 'Unknown'}</p>
-                    <p><strong>Company Type:</strong> ${details.context_detection.company_type || 'Unknown'}</p>
-                    <p><strong>Role Type:</strong> ${details.context_detection.role_type || 'Unknown'}</p>
-                `;
-                analysisDiv.appendChild(contextDiv);
-            }
-
-            // Smart criteria
-            if (details.smart_criteria) {
-                const criteriaDiv = document.createElement('div');
-                criteriaDiv.className = 'p-4 bg-purple-50 border border-purple-200 rounded-lg';
-                criteriaDiv.innerHTML = `
-                    <h4 class="font-semibold text-purple-800 mb-2">🎯 Elite Hiring Criteria</h4>
-                    <p class="text-purple-700">Generated criteria for top 1-2% performers in this role.</p>
-                `;
-                analysisDiv.appendChild(criteriaDiv);
-            }
-
-            // Skills analysis
-            if (details.skills_analysis) {
-                const skillsDiv = document.createElement('div');
-                skillsDiv.className = 'p-4 bg-blue-50 border border-blue-200 rounded-lg';
-                skillsDiv.innerHTML = `
-                    <h4 class="font-semibold text-blue-800 mb-2">🔧 Skills Analysis</h4>
-                    <p class="text-blue-700">Enhanced skills matching with confidence levels and inferred capabilities.</p>
-                `;
-                analysisDiv.appendChild(skillsDiv);
-            }
         }
 
         function createScoreChart(result) {
